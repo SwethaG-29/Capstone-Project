@@ -179,7 +179,6 @@ END $$
 DELIMITER ;
 
 -- ----- Q. How many unique Equipments operating in the field 
-
 SELECT COUNT(DISTINCT `primary machine name`) AS unique_primary_machines
 FROM cycle_data;
 -- There are 136 Equipments operating in the field
@@ -197,7 +196,50 @@ where `idle duration` > 0
 Order by `idle duration` DESC;
 
 -- The minimum number of hrs the Equipment/Machine kept idle was 45min - 12 hrs 
--- So need to investigate why the Equipment was idle for so long ? Is it beacuse of Waiting time the amchine  )
--- Mainaineneance, no operator , 
+-- So need to investigate why the Equipment was idle for so long ? Is it beacuse of Waiting time the machine
+-- Mainaineneance, no operator, 
+
+SELECT
+    `Primary Machine Name` AS MachineID,
+    AVG(TIMESTAMPDIFF(MINUTE, `Cycle Start Timestamp (GMT8)`, `Cycle End Timestamp (GMT8)`)) AS AverageIdleTime
+FROM
+    Cycle_Data
+WHERE
+    `Idle Duration` IS NOT NULL
+GROUP BY
+    `Primary Machine Name`;
 
 select * from cycle_data;
+
+-- ----- Q. How Long the Trucks were Delay
+SELECT (`primary machine name`) AS unique_primary_machines, round((`Delay Time`/3600),2) as `Delay Duration in Hrs`
+FROM cycle_data
+where `Delay Time` > 0 
+Order by `Delay Time` DESC;
+-- The delay the Truck is in the range of 2 - 12Hrs, need to investigate why this delay is occcured
+-- (Is it because of weather condition or road's issue or Truck Failure, Need consider all possible factor)
+
+-- -----Q. How many machines are operational versus those that require maintenance?
+
+SELECT
+    CASE 
+        WHEN `Down Time` > 0 OR `UNSCHEDULEDDOWNTIME` > 0 THEN 'Maintenance'
+        ELSE 'Operational'
+    END AS Status,
+    COUNT(DISTINCT `primary machine name`) AS MachineCount
+FROM
+    Cycle_Data
+GROUP BY
+    Status;
+    
+-- 130 Machines require Maintenance and 108 were operation 
+
+-- -----Q. What is the average payload transported by each type of machine?
+
+select ROUND(Avg(`Payload (kg)`),2) as Average_Payload, `cycle type` 
+from cycle_data
+GROUP BY `cycle type`;
+-- LoaderCycle - 234636.12, TruckCycle - 228343.11
+
+-- 
+
