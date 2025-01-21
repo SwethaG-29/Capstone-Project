@@ -239,7 +239,7 @@ GROUP BY
 select ROUND(Avg(`Payload (kg)`),2) as Average_Payload, `cycle type` 
 from cycle_data
 GROUP BY `cycle type`;
+
 -- LoaderCycle - 234636.12, TruckCycle - 228343.11
 
--- 
-
+DESCRIBE cycle_data;
